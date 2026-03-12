@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # --- Authentication Services ---
+  auth-db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password123
+      - POSTGRES_DB=jumbo_auth
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=postgres://admin:password123@auth-db:5432/jumbo_auth
+      - JWT_SECRET=supersecretjumbokey
+    depends_on:
+      - auth-db
+    volumes:
+      - ./auth-service:/app
+      - /app/node_modules
+
+  # --- Product Services ---
+  product-db:
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  product-service:
+    build: ./product-service
+    ports:
+      - "3002:3002"
+    environment:
+      - MONGO_URI=mongodb://product-db:27017/jumbo_products
+      - JWT_SECRET=supersecretjumbokey
+    depends_on:
+      - product-db
+    volumes:
+      - ./product-service:/app
+      - /app/node_modules
+
+  # --- Order Services ---
+  order-db:
+    image: postgres:15-alpine
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password123
+      - POSTGRES_DB=jumbo_orders
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "3003:3003" # Added port mapping for order service
+    environment:
+      - DATABASE_URL=postgres://admin:password123@order-db:5432/jumbo_orders
+      - JWT_SECRET=supersecretjumbokey
+    depends_on:
+      - order-db
+    volumes:
+      - ./order-service:/app
+      - /app/node_modules
+
+  # --- API Gateway ---
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+
+  # --- NEW Frontend Service ---
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api-gateway
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+
+volumes:
+  auth_db_data:
+  mongo_data:
+  order_db_data:
