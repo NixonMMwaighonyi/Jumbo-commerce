@@ -83,7 +83,7 @@ app.post('/orders', authenticate, async (req, res) => {
             
             // Decrement Stock in Product Service
             try {
-                await fetch(`http://product-service:3002/products/${item.product_id}/decrement`, {
+                await fetch(`${process.env.PRODUCT_SERVICE_URL || 'http://product-service:3002'}/products/${item.product_id}/decrement`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'Authorization': token },
                     body: JSON.stringify({ quantity: item.quantity })
@@ -93,7 +93,7 @@ app.post('/orders', authenticate, async (req, res) => {
 
         // 🚨 Ping the API Gateway for live WebSocket alerts!
         try {
-            await fetch('http://api-gateway:3000/internal/notify', {
+            await fetch(`${process.env.API_GATEWAY_URL || 'http://api-gateway:3000'}/internal/notify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ event: 'new_order_alert', data: insertedOrders })
