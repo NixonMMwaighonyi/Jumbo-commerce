@@ -114,4 +114,4 @@ app.delete('/products/:id', authenticateToken, isAdmin, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-app.listen(3002, () => console.log("Product Service running on port 3002"));
+app.listen(process.env.PORT || 3002, () => console.log("Product Service running on port 3002"));

@@ -137,4 +137,4 @@ app.put(['/users/password', '/auth/password'], async (req, res) => {
     }
 });
 
-app.listen(3001, () => console.log("🐘 THE BCRYPT SERVER IS ALIVE ON PORT 3001 🐘"));
+app.listen(process.env.PORT || 3001, () => console.log("🐘 THE BCRYPT SERVER IS ALIVE ON PORT 3001 🐘"));

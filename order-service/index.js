@@ -177,4 +177,4 @@ app.delete('/orders/:id', authenticate, async (req, res) => {
     } catch (err) { res.status(500).send("Server Error"); }
 });
 
-app.listen(3003, () => console.log("🛒 Order Service running on port 3003"));
+app.listen(process.env.PORT || 3003, () => console.log("🛒 Order Service running on port 3003"));

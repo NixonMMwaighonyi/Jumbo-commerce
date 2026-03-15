@@ -14,7 +14,7 @@ const app = express();
 
 
 
-// Create the HTTP server and attach Socket.io
+
 
 const server = http.createServer(app);
 
@@ -26,7 +26,7 @@ const io = new Server(server, {
 
 
 
-// 1. Allow Frontend to talk to Gateway
+
 
 app.use(cors());
 
@@ -38,7 +38,7 @@ console.log("🐘 Gateway attempting to start...");
 
 
 
-// --- WEBSOCKET LOGIC ---
+
 
 io.on('connection', (socket) => {
 
@@ -46,13 +46,13 @@ io.on('connection', (socket) => {
 
 
 
-    // When ANY connected user triggers an update (like buying a product)
+    
 
     socket.on('data_changed', () => {
 
         console.log('🔄 Data change detected! Broadcasting to all clients...');
 
-        // Tell EVERYONE ELSE to refresh their data
+        
 
         socket.broadcast.emit('refresh_data');
 
@@ -72,9 +72,9 @@ io.on('connection', (socket) => {
 
 
 
-// 2. Auth Service
 
-app.use('/', proxy('http://auth-service:3001', {
+
+app.use('/', proxy(process.env.AUTH_SERVICE_URL || 'http://auth-service:3001', {
 
     filter: (req) => req.path.startsWith('/auth')
 
@@ -82,9 +82,9 @@ app.use('/', proxy('http://auth-service:3001', {
 
 
 
-// 3. Product Service
 
-app.use('/', proxy('http://product-service:3002', {
+
+app.use('/', proxy(process.env.PRODUCT_SERVICE_URL || 'http://product-service:3002', {
 
     filter: (req) => req.path.startsWith('/products')
 
@@ -92,9 +92,9 @@ app.use('/', proxy('http://product-service:3002', {
 
 
 
-// 4. Order Service
 
-app.use('/', proxy('http://order-service:3003', {
+
+app.use('/', proxy(process.env.ORDER_SERVICE_URL || 'http://order-service:3003', {
 
     filter: (req) => req.path.startsWith('/orders')
 
@@ -102,7 +102,7 @@ app.use('/', proxy('http://order-service:3003', {
 
 
 
-// 5. "Catch-All" for Lost Requests
+
 
 app.use((req, res) => {
 
@@ -118,9 +118,9 @@ app.use((req, res) => {
 
 
 
-// CHANGE: Use server.listen instead of app.listen
 
-server.listen(3000, () => {
+
+server.listen(process.env.PORT || 3000, () => {
 
     console.log('🚀 Gateway (HTTP + WebSockets) is running on port 3000');
 
